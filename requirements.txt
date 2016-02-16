@@ -5,3 +5,4 @@
 #    pip-compile requirements.in
 #
 Django==1.9.2
+pytz==2015.7
