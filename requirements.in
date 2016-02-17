@@ -1,2 +1,4 @@
 Django
 pytz
+pytest
+pytest-django
