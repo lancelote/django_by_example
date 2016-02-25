@@ -1,0 +1,13 @@
+[MESSAGES CONTROL]
+disable=locally-disabled
+
+[REPORTS]
+# Simplify pylint reports
+reports=no
+
+[FORMAT]
+# Maximum number of characters on a single line.
+max-line-length=120
+
+[MASTER]
+ignore=migrations

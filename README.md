@@ -18,3 +18,17 @@ Code for [Django by Example book](http://www.amazon.com/Django-Example-Antonio-M
 - [ ] Chapter 10: Building an e-Learning Platform
 - [ ] Chapter 11: Caching Content
 - [ ] Chapter 12: Building an API
+
+## Testing
+
+### Tests
+
+```bash
+python mysite/manage.py test blog
+```
+
+### Syntax Validation
+
+```bash
+python -m pylint mysite/blog/
+```

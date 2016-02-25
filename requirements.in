@@ -2,3 +2,4 @@ Django
 pytz
 pytest
 factory_boy
+pylint

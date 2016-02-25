@@ -1,5 +1,7 @@
 # coding=utf-8
 
+# pylint: disable=missing-docstring,no-member,invalid-name
+
 """
 Models test
 """

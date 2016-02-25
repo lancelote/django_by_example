@@ -1,4 +1,5 @@
 # coding=utf-8
+# pylint: disable=too-few-public-methods,missing-docstring
 
 """
 Django Model Factories
