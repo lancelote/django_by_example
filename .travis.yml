@@ -1,0 +1,23 @@
+# Travis CI settings
+
+language: python
+
+python:
+  - '3.4'
+
+env:
+  matrix:
+    - DB=sqlite DJANGO_VERSION=1.9.2
+
+install:
+  - pip install -U pip
+  - pip install -r requirements.txt
+
+before_script:
+
+  - python3 mysite/manage.py migrate
+  - sleep 3
+
+script:
+  - python3 mysite/manage.py test blog
+  - python3 -m pylint mysite/blog

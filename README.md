@@ -1,4 +1,5 @@
 [![Requirements Status](https://requires.io/github/lancelote/django_by_example/requirements.svg?branch=master)](https://requires.io/github/lancelote/django_by_example/requirements/?branch=master)
+[![Build Status](https://travis-ci.org/lancelote/django_by_example.svg)](https://travis-ci.org/lancelote/django_by_example)
 
 # django_by_example
 
