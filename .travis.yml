@@ -15,9 +15,13 @@ install:
 
 before_script:
 
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sleep 3
   - python3 mysite/manage.py migrate
   - sleep 3
 
 script:
   - python3 mysite/manage.py test blog
+  - python3 mysite/manage.py test mysite/functional_tests
   - python3 -m pylint mysite/blog
