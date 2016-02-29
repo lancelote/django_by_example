@@ -100,3 +100,23 @@ class TestPostAdmin(StaticLiveServerTestCase):
         self.search_post_by_title('')
         self.assertEqual(self.browser.find_element_by_css_selector('th:last-child span').text, '1')
         self.assertEqual(self.browser.find_element_by_css_selector('th:nth-child(5) span').text, '2')
+
+        # He start a new post
+        self.browser.find_element_by_css_selector('.addlink').click()
+
+        # He type in post title
+        self.browser.find_element_by_id('id_title').send_keys('Hello World')
+
+        # He sees that slug field auto-updates
+        self.assertEqual(self.browser.find_element_by_id('id_slug').get_attribute('value'), 'hello-world')
+
+        # He click at the author lookup button
+        self.browser.find_element_by_id('lookup_id_author').click()
+        self.browser.switch_to.window(self.browser.window_handles[1])
+
+        # He choose author
+        self.browser.find_element_by_css_selector('.row2 a').click()
+
+        # he sees that author correctly selected
+        self.browser.switch_to.window(self.browser.window_handles[0])
+        self.assertEqual(self.browser.find_element_by_id('id_author').get_attribute('value'), '2')
