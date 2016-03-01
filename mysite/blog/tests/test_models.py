@@ -41,3 +41,12 @@ class TestPost(TestCase):
         post2 = PostFactory(title='second')
         post3 = PostFactory(title='third')
         self.assertEqual(list(Post.objects.all()), [post3, post2, post1])
+
+
+class TestPublishedManager(TestCase):
+
+    def test_published_manager_returns_only_published_posts(self):
+        post1 = PostFactory(status='published')
+        PostFactory()
+        post3 = PostFactory(status='published')
+        self.assertListEqual(list(Post.published.all()), [post3, post1])
