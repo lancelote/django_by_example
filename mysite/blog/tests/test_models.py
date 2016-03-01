@@ -2,13 +2,13 @@
 
 # pylint: disable=missing-docstring,no-member,invalid-name
 
-"""
-Models test
-"""
+"""Blog models test"""
+
+from pytz import UTC
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from django.utils.timezone import now
+from django.utils import timezone
 
 from blog.models import Post
 from blog.factories import PostFactory, UserFactory
@@ -20,7 +20,7 @@ class TestPost(TestCase):
         self.assertEqual('draft', PostFactory().status)
 
     def test_can_not_create_two_posts_with_same_slug_and_date(self):
-        publish = now()
+        publish = timezone.now()
         PostFactory(slug='sample_slug', publish=publish)
         self.assertRaises(ValidationError, Post(slug='sample_slug', publish=publish).validate_unique)
 
@@ -41,6 +41,10 @@ class TestPost(TestCase):
         post2 = PostFactory(title='second')
         post3 = PostFactory(title='third')
         self.assertEqual(list(Post.objects.all()), [post3, post2, post1])
+
+    def test_absolute_url(self):
+        post1 = PostFactory(publish=timezone.datetime(2016, 10, 11, tzinfo=UTC))
+        self.assertEqual(post1.get_absolute_url(), '/blog/2016/10/11/sample-slug-0/')
 
 
 class TestPublishedManager(TestCase):

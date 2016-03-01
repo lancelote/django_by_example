@@ -24,12 +24,18 @@ Code for [Django by Example book](http://www.amazon.com/Django-Example-Antonio-M
 
 ### Tests
 
+Aka unit tests:
 ```bash
-python mysite/manage.py test blog
+python3 mysite/manage.py test blog.tests
+```
+
+Acceptance tests (selenium):
+```bash
+python3 mysite/manage.py test functional_tests
 ```
 
 ### Syntax Validation
 
 ```bash
-python -m pylint mysite/blog/
+python3 -m pylint mysite/blog/ mysite/functional_tests
 ```

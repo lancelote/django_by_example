@@ -1,14 +1,12 @@
 # coding=utf-8
 # pylint: disable=missing-docstring
 
-"""
-Admin page tests
-"""
+"""Admin page tests"""
+
+from selenium import webdriver
 
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-
-from selenium import webdriver
 
 from blog.factories import PostFactory
 
@@ -17,7 +15,6 @@ class TestPostAdmin(StaticLiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.Firefox()
-        self.browser.implicitly_wait(3)
         self.admin_user = get_user_model().objects.create_superuser(
             username='admin',
             email='admin@example.com',

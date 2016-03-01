@@ -1,0 +1,39 @@
+* {
+    box-sizing:border-box;
+}
+
+a {
+    text-decoration: none;
+}
+
+body,
+html {
+    height: 100%;
+    margin: 0;
+}
+
+h1 {
+    border-bottom: 1px solid lightgrey;
+    padding-bottom: 10px;
+}
+
+.date {
+    color: grey;
+}
+
+#container,
+#sidebar {
+    display: inline-block;
+    float: left;
+    padding: 20px;
+    height: 100%;
+}
+
+#container {
+    width: 70%;
+}
+
+#sidebar {
+    width: 30%;
+    background-color: lightgrey;
+}
