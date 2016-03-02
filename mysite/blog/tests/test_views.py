@@ -23,6 +23,27 @@ class TestPostList(TestCase):
         self.assertNotContains(response, post2.title)
         self.assertContains(response, post3.title)
 
+    def test_returns_only_3_last_posts_by_default(self):
+        posts = [PostFactory(status='published') for _ in range(4)]
+        response = self.client.get('/blog/')
+        self.assertNotContains(response, posts[0].title)
+        for post in posts[1:]:
+            self.assertContains(response, post.title)
+
+    def test_second_page_returns_correct_posts(self):
+        posts = [PostFactory(status='published') for _ in range(4)]
+        response = self.client.get('/blog/?page=2')
+        self.assertContains(response, posts[0].title)
+        for post in posts[1:]:
+            self.assertNotContains(response, post.title)
+
+    def test_returns_last_page_if_page_is_out_of_range(self):
+        posts = [PostFactory(status='published') for _ in range(4)]
+        response = self.client.get('/blog/?page=999')
+        self.assertContains(response, posts[0].title)
+        for post in posts[1:]:
+            self.assertNotContains(response, post.title)
+
 
 class TestPostDetail(TestCase):
 
