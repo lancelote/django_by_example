@@ -7,7 +7,7 @@ Code for [Django by Example book](http://www.amazon.com/Django-Example-Antonio-M
 
 ## My Progress
 
-- [ ] Chapter 1: Building a Blog Application
+- [x] Chapter 1: Building a Blog Application
 - [ ] Chapter 2: Enhancing Your Blog with Advanced Features
 - [ ] Chapter 3: Extending Your Blog Application
 - [ ] Chapter 4: Building a Social Website
