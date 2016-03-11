@@ -26,11 +26,11 @@ All sensitive data (user names, passwords, Django secret key and etc) should be 
 and will be load by `os.environ`. Any missing values will raise `ImproperlyConfigured` exception. List of required
 environment variables:
 
-| Variable Name | Value |
-| - | - |
-| SECRET_KEY | Django secret key |
-| EMAIL_HOST_USER | Google email account name to send mails from django (example@gmail.com) |
-| EMAIL_HOST_PASSWORD | Google account password or application specific password for two factor authentication |
+| Variable | Value |
+| --- | --- |
+| `SECRET_KEY` | Django secret key |
+| `EMAIL_HOST_USER` | Google email account name to send mails from django (example@gmail.com) |
+| `EMAIL_HOST_PASSWORD` | Google account password or application specific password for two factor authentication |
 
 ## Testing
 
