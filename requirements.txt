@@ -5,10 +5,10 @@
 #    pip-compile requirements.txt
 #
 astroid==1.4.4
-colorama==0.3.6
-Django==1.9.3
+colorama==0.3.7
+Django==1.9.4
 factory-boy==2.6.1
-fake-factory==0.5.5
+fake-factory==0.5.6
 lazy-object-proxy==1.2.1
 py==1.4.31
 pylint==1.5.4
