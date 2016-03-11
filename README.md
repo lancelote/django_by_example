@@ -32,6 +32,20 @@ environment variables:
 | `EMAIL_HOST_USER` | Google email account name to send mails from django (example@gmail.com) |
 | `EMAIL_HOST_PASSWORD` | Google account password or application specific password for two factor authentication |
 
+## Requirements
+
+### Installation
+
+- Python 3+
+- Virtualenv usage is recommended
+- To install requirements: `pip install -r requirements.txt` or `pip-sync` (`pip-tools` is required)
+
+### Update
+
+- Install `pip-tools`
+- Update `requirements.in`
+- Compile `requirements.txt` by running `pip-compile requirements.in`
+
 ## Testing
 
 ### Tests
