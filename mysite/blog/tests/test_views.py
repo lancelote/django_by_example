@@ -1,16 +1,16 @@
-# coding=utf-8
 # pylint: disable=missing-docstring, invalid-name, no-member
 
 """Blog views tests"""
 
 import unittest
 
+from django.core import mail
 from django.test import TestCase
 
 from blog.factories import PostFactory
 
 
-class TestPostList(TestCase):
+class PostListTest(TestCase):
 
     def test_post_list_page_renders_list_template(self):
         response = self.client.get('/blog/')
@@ -48,7 +48,7 @@ class TestPostList(TestCase):
             self.assertNotContains(response, post.title)
 
 
-class TestPostDetail(TestCase):
+class PostDetailTest(TestCase):
 
     def setUp(self):
         self.post = PostFactory(status='published')
@@ -61,5 +61,54 @@ class TestPostDetail(TestCase):
         self.assertContains(self.response, self.post.title)
 
     def test_unknown_post_returns_404(self):
-        response = self.client.get('2000/01/02/hello-world/')
+        response = self.client.get('/blog/2000/01/02/hello-world/')
         self.assertEqual(response.status_code, 404)
+
+
+class PostShareTest(TestCase):
+
+    def setUp(self):
+        self.post = PostFactory(status='published')
+        self.response = self.client.get('/blog/%s/share/' % self.post.id)
+
+    def sample_post_share(self):
+        return self.client.post('/blog/%s/share/' % self.post.id, data={
+            'name': 'user',
+            'sender': 'from@example.com',
+            'recipient': 'to@example.com',
+            'comments': 'sample comments'
+        })
+
+    def test_post_share_renders_share_template(self):
+        self.assertTemplateUsed(self.response, 'blog/post/share.html')
+
+    def test_response_contains_post_title(self):
+        self.assertContains(self.response, self.post.title)
+
+    def test_unknown_post_returns_404(self):
+        response = self.client.get('/blog/999/share/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_method_does_not_send_email(self):
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_get_method_returns_form(self):
+        self.assertContains(self.response, 'form')
+
+    def test_post_method_send_email(self):
+        self.sample_post_share()
+        subject = 'user (from@example.com) recommends you reading "%s"' % self.post.title
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, subject)
+
+    def test_post_method_send_email_with_correct_url(self):
+        self.sample_post_share()
+        self.assertIn(self.post.get_absolute_url(), mail.outbox[0].body)
+
+    def test_post_method_returns_success_message(self):
+        post_response = self.sample_post_share()
+        self.assertContains(post_response, '"%s" was successfully sent.' % self.post.title)
+
+    def test_post_with_invalid_form_returns_form(self):
+        bad_post_response = self.client.post('/blog/%s/share/' % self.post.id)
+        self.assertContains(bad_post_response, 'form')

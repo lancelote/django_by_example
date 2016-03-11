@@ -27,6 +27,6 @@ class TestPostDetail(StaticLiveServerTestCase):
 
         # He sees the post title, date, author and body
         self.assertEqual(self.browser.find_element_by_css_selector('h1').text, self.post.title)
-        self.assertEqual(self.browser.find_element_by_css_selector('#container p:last-child').text, self.post.body)
+        self.assertEqual(self.browser.find_element_by_css_selector('#container p:nth-child(3)').text, self.post.body)
         date_author = 'Published Oct. 11, 2016, 5:27 a.m. by %s' % self.post.author.username
         self.assertEqual(self.browser.find_element_by_class_name('date').text, date_author)
