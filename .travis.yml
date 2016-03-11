@@ -18,11 +18,11 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - sleep 3
-  - python3 mysite/manage.py migrate
-  - sleep 3
   - export EMAIL_HOST_USER="test@example.com"
   - export SECRET_KEY="78m5@7^h(lne^@08$0@dn5i%96v^*u@v+1zp9_5t!iagf5319v"
   - export EMAIL_HOST_PASSWORD="password"
+  - python3 mysite/manage.py migrate
+  - sleep 3
 
 script:
   - python3 mysite/manage.py test blog
