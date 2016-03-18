@@ -4,11 +4,8 @@
 
 """Blog models test"""
 
-from pytz import UTC
-
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from django.utils import timezone
 
 from blog.models import Post, Comment
 from blog.factories import PostFactory, UserFactory, CommentFactory
@@ -20,16 +17,15 @@ class TestPost(TestCase):
         self.assertEqual('draft', PostFactory().status)
 
     def test_can_not_create_two_posts_with_same_slug_and_date(self):
-        publish = timezone.now()
-        PostFactory(slug='sample_slug', publish=publish)
-        self.assertRaises(ValidationError, Post(slug='sample_slug', publish=publish).validate_unique)
+        post = PostFactory()
+        self.assertRaises(ValidationError, Post(slug=post.slug, publish=post.publish).validate_unique)
 
     def test_can_get_user_posts(self):
         user1 = UserFactory()
         user2 = UserFactory()
-        post1 = PostFactory(title='first', author=user1)
-        PostFactory(title='second', author=user2)
-        post3 = PostFactory(title='third', author=user1)
+        post1 = PostFactory(author=user1)
+        PostFactory(author=user2)
+        post3 = PostFactory(author=user1)
         user1_posts = user1.blog_posts.all()
 
         self.assertEqual(len(user1_posts), 2)
@@ -37,14 +33,15 @@ class TestPost(TestCase):
         self.assertIn(post3, user1_posts)
 
     def test_post_order_is_reverse_publish(self):
-        post1 = PostFactory(title='first')
-        post2 = PostFactory(title='second')
-        post3 = PostFactory(title='third')
+        post1 = PostFactory()
+        post2 = PostFactory()
+        post3 = PostFactory()
         self.assertEqual(list(Post.objects.all()), [post3, post2, post1])
 
     def test_absolute_url(self):
-        post1 = PostFactory(slug='sample-slug-0', publish=timezone.datetime(2016, 10, 11, tzinfo=UTC))
-        self.assertEqual(post1.get_absolute_url(), '/blog/2016/10/11/sample-slug-0/')
+        post = PostFactory()
+        self.assertEqual(post.get_absolute_url(), '/blog/%04d/%02d/%02d/%s/' % (
+            int(post.publish.year), int(post.publish.month), int(post.publish.day), post.slug))
 
 
 class TestPublishedManager(TestCase):
@@ -72,6 +69,5 @@ class TestComments(TestCase):
         self.assertEqual(list(post.comments.all()), [comment1, comment3])
 
     def test_comment_str_representation(self):
-        post = PostFactory(title='test-post')
-        comment = CommentFactory(name='test-user', post=post)
-        self.assertEqual(comment.__str__(), 'Comment by test-user on test-post')
+        comment = CommentFactory()
+        self.assertEqual(comment.__str__(), 'Comment by %s on %s' % (comment.name, comment.post.title))

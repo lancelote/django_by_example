@@ -8,7 +8,21 @@ from selenium import webdriver
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
-from blog.factories import PostFactory
+from blog.factories import PostFactory, CommentFactory
+
+
+def login(browser, username, password):
+    """Login given user into django admin
+
+    Args:
+        browser: Browser instance
+        username (str)
+        password (str)
+    """
+    login_form = browser.find_element_by_id('login-form')
+    login_form.find_element_by_name('username').send_keys(username)
+    login_form.find_element_by_name('password').send_keys(password)
+    login_form.find_element_by_css_selector('.submit-row input').click()
 
 
 class TestPostAdmin(StaticLiveServerTestCase):
@@ -20,8 +34,8 @@ class TestPostAdmin(StaticLiveServerTestCase):
             email='admin@example.com',
             password='password'
         )
-        PostFactory()
-        PostFactory()
+        self.post1 = PostFactory(author=self.admin_user)
+        self.post2 = PostFactory(author=self.admin_user)
 
     def tearDown(self):
         self.browser.quit()
@@ -45,17 +59,14 @@ class TestPostAdmin(StaticLiveServerTestCase):
         return self.browser.find_elements_by_css_selector('.field-title a')
 
     def test_displayed_list(self):
-        # Admin open admin panel
+        # Admin opens admin panel
         self.browser.get(self.live_server_url + '/admin/')
 
         # He checks page title to be sure he is in the right place
         self.assertEqual(self.browser.title, 'Log in | Django site admin')
 
-        # He enters his username and password and submits the form to log in
-        login_form = self.browser.find_element_by_id('login-form')
-        login_form.find_element_by_name('username').send_keys('admin')
-        login_form.find_element_by_name('password').send_keys('password')
-        login_form.find_element_by_css_selector('.submit-row input').click()
+        # He logs in
+        login(self.browser, 'admin', 'password')
 
         # He sees link to Posts
         posts_link = self.browser.find_element_by_link_text('Posts')
@@ -79,15 +90,15 @@ class TestPostAdmin(StaticLiveServerTestCase):
         # He can search by post title and body
         self.assertEqual(len(self.search_post_by_title('')), 2)
 
-        posts = self.search_post_by_title('Sample Title 0')
+        posts = self.search_post_by_title(self.post1.title)
         self.assertEqual(len(posts), 1)
-        self.assertEqual(posts[0].text, 'Sample Title 0')
+        self.assertEqual(posts[0].text, self.post1.title)
 
-        posts = self.search_post_by_title('Sample Title 1')
+        posts = self.search_post_by_title(self.post2.title)
         self.assertEqual(len(posts), 1)
-        self.assertEqual(posts[0].text, 'Sample Title 1')
+        self.assertEqual(posts[0].text, self.post2.title)
 
-        posts = self.search_post_by_title('Sample Title 2')
+        posts = self.search_post_by_title('Unknown Post')
         self.assertEqual(len(posts), 0)
 
         # He can see the date hierarchy links by publish date
@@ -112,8 +123,54 @@ class TestPostAdmin(StaticLiveServerTestCase):
         self.browser.switch_to.window(self.browser.window_handles[1])
 
         # He choose author
-        self.browser.find_element_by_css_selector('.row2 a').click()
+        self.browser.find_element_by_css_selector('.row1 a').click()
 
-        # he sees that author correctly selected
+        # He sees that author correctly selected
         self.browser.switch_to.window(self.browser.window_handles[0])
-        self.assertEqual(self.browser.find_element_by_id('id_author').get_attribute('value'), '2')
+        self.assertEqual(self.browser.find_element_by_id('id_author').get_attribute('value'), str(self.admin_user.id))
+
+
+class TestCommentAdmin(StaticLiveServerTestCase):
+
+    def setUp(self):
+        self.browser = webdriver.Firefox()
+        self.admin_user = get_user_model().objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='password'
+        )
+        CommentFactory()
+        CommentFactory()
+
+    def tearDown(self):
+        self.browser.quit()
+
+    def test_displayed_comment(self):
+        # Admin opens admin panel
+        self.browser.get(self.live_server_url + '/admin/')
+
+        # Log in user
+        login(self.browser, 'admin', 'password')
+
+        # He sees link to Comments
+        comments_link = self.browser.find_element_by_link_text('Comments')
+        self.assertEqual(comments_link.get_attribute('href'), self.live_server_url + '/admin/blog/comment/')
+
+        # He clicks on Comments and see table of comments with columns: name, email, post, created, updated and active
+        comments_link.click()
+        self.assertEqual(self.browser.find_element_by_css_selector('.column-name a').text, 'NAME')
+        self.assertEqual(self.browser.find_element_by_css_selector('.column-email a').text, 'EMAIL')
+        self.assertEqual(self.browser.find_element_by_css_selector('.column-post a').text, 'POST')
+        self.assertEqual(self.browser.find_element_by_css_selector('.column-created .text a').text, 'CREATED')
+        self.assertEqual(self.browser.find_element_by_css_selector('.column-updated .text a').text, 'UPDATED')
+        self.assertEqual(self.browser.find_element_by_css_selector('.column-active a').text, 'ACTIVE')
+
+        # He can filter by created, updated and active
+        filter_div = self.browser.find_element_by_id('changelist-filter')
+        filter_options = filter_div.find_elements_by_tag_name('h3')
+        self.assertEqual(filter_options[0].text, 'By active')
+        self.assertEqual(filter_options[1].text, 'By created')
+        self.assertEqual(filter_options[2].text, 'By updated')
+
+        # He can search by name, email and body
+        # ToDo
