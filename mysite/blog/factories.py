@@ -33,3 +33,14 @@ class PostFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = models.Post
+
+
+class CommentFactory(factory.DjangoModelFactory):
+
+    post = factory.SubFactory(PostFactory)
+    name = factory.Sequence(lambda n: 'Sample Name %s' % n)
+    email = factory.Sequence(lambda n: 'email_%s@example.com' % n)
+    body = factory.Sequence(lambda n: 'Sample Text %s' % n)
+
+    class Meta:
+        model = models.Comment
