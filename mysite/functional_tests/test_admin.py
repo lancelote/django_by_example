@@ -4,6 +4,7 @@
 """Admin page tests"""
 
 from selenium import webdriver
+from selenium.webdriver.support.ui import Select
 
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -25,7 +26,7 @@ def login(browser, username, password):
     login_form.find_element_by_css_selector('.submit-row input').click()
 
 
-class TestPostAdmin(StaticLiveServerTestCase):
+class TestModelAdmin(StaticLiveServerTestCase):
 
     def setUp(self):
         self.browser = webdriver.Firefox()
@@ -34,31 +35,28 @@ class TestPostAdmin(StaticLiveServerTestCase):
             email='admin@example.com',
             password='password'
         )
-        self.post1 = PostFactory(author=self.admin_user)
-        self.post2 = PostFactory(author=self.admin_user)
 
     def tearDown(self):
         self.browser.quit()
 
-    def search_post_by_title(self, title):
-        """Search for Posts with given text in title
-
-        Args:
-            title (str): Title text to search
-
-        Returns:
-            List of title elements
-        """
+    def search_model_by(self, text):
         search_field = self.browser.find_element_by_id('searchbar')
-        search_button = self.browser.find_element_by_css_selector('#changelist-search input[type="submit"]')
+        search_button = self.browser.find_element_by_css_selector('#changelist-search input[type="submit"')
 
         search_field.clear()
-        search_field.send_keys(title)
+        search_field.send_keys(text)
         search_button.click()
 
-        return self.browser.find_elements_by_css_selector('.field-title a')
+        return self.browser.find_elements_by_css_selector('#result_list [class^="row"]')
+
+
+class TestPostAdmin(TestModelAdmin):
 
     def test_displayed_list(self):
+        # We have two posts
+        self.post1 = PostFactory(author=self.admin_user)
+        self.post2 = PostFactory(author=self.admin_user)
+
         # Admin opens admin panel
         self.browser.get(self.live_server_url + '/admin/')
 
@@ -88,31 +86,23 @@ class TestPostAdmin(StaticLiveServerTestCase):
         self.assertEqual(filter_options[2].text, 'By publish')
 
         # He can search by post title and body
-        self.assertEqual(len(self.search_post_by_title('')), 2)
-
-        posts = self.search_post_by_title(self.post1.title)
-        self.assertEqual(len(posts), 1)
-        self.assertEqual(posts[0].text, self.post1.title)
-
-        posts = self.search_post_by_title(self.post2.title)
-        self.assertEqual(len(posts), 1)
-        self.assertEqual(posts[0].text, self.post2.title)
-
-        posts = self.search_post_by_title('Unknown Post')
-        self.assertEqual(len(posts), 0)
+        self.assertEqual(len(self.search_model_by('')), 2)
+        self.assertEqual(len(self.search_model_by(self.post1.title)), 1)
+        self.assertEqual(len(self.search_model_by(self.post2.title)), 1)
+        self.assertEqual(len(self.search_model_by('Unknown Post')), 0)
 
         # He can see the date hierarchy links by publish date
         self.browser.find_element_by_class_name('xfull')
 
         # Posts sorted by status and than by publish date
-        self.search_post_by_title('')
+        self.search_model_by('')
         self.assertEqual(self.browser.find_element_by_css_selector('th:last-child span').text, '1')
         self.assertEqual(self.browser.find_element_by_css_selector('th:nth-child(5) span').text, '2')
 
         # He start a new post
         self.browser.find_element_by_css_selector('.addlink').click()
 
-        # He type in post title
+        # He types in post title
         self.browser.find_element_by_id('id_title').send_keys('Hello World')
 
         # He sees that slug field auto-updates
@@ -129,23 +119,30 @@ class TestPostAdmin(StaticLiveServerTestCase):
         self.browser.switch_to.window(self.browser.window_handles[0])
         self.assertEqual(self.browser.find_element_by_id('id_author').get_attribute('value'), str(self.admin_user.id))
 
+        # He types in the post body
+        self.browser.find_element_by_id('id_body').send_keys('Sample post body')
 
-class TestCommentAdmin(StaticLiveServerTestCase):
+        # He publish section
+        self.browser.find_element_by_id('id_publish_0')
 
-    def setUp(self):
-        self.browser = webdriver.Firefox()
-        self.admin_user = get_user_model().objects.create_superuser(
-            username='admin',
-            email='admin@example.com',
-            password='password'
-        )
-        CommentFactory()
-        CommentFactory()
+        # He switch post status to Published
+        select = Select(self.browser.find_element_by_id('id_status'))
+        select.select_by_visible_text('Published')
 
-    def tearDown(self):
-        self.browser.quit()
+        # Saves the post
+        self.browser.find_element_by_css_selector('.submit-row .default').click()
+
+        # And he sees a new post in the list
+        self.assertEqual(len(self.search_model_by('')), 3)
+
+
+class TestCommentAdmin(TestModelAdmin):
 
     def test_displayed_comment(self):
+        # We have two comments
+        self.comment1 = CommentFactory()
+        self.comment2 = CommentFactory()
+
         # Admin opens admin panel
         self.browser.get(self.live_server_url + '/admin/')
 
@@ -173,4 +170,34 @@ class TestCommentAdmin(StaticLiveServerTestCase):
         self.assertEqual(filter_options[2].text, 'By updated')
 
         # He can search by name, email and body
-        # ToDo
+        self.assertEqual(len(self.search_model_by('')), 2)  # Total comments
+
+        for field in ('name', 'email', 'body'):
+            self.assertEqual(len(self.search_model_by(getattr(self.comment1, field))), 1)
+            self.assertEqual(len(self.search_model_by(getattr(self.comment2, field))), 1)
+            self.assertEqual(len(self.search_model_by('Unknown Post')), 0)
+
+        # He starts a new comment
+        self.browser.find_element_by_css_selector('.addlink').click()
+
+        # He choose the post
+        select = Select(self.browser.find_element_by_id('id_post'))
+        select.select_by_visible_text(self.comment1.post.title)
+
+        # He types in a name
+        self.browser.find_element_by_id('id_name').send_keys('comment_author')
+
+        # He types in an email
+        self.browser.find_element_by_id('id_email').send_keys('comment_author@example.com')
+
+        # He types in a comment body
+        self.browser.find_element_by_id('id_body').send_keys('Sample comment body')
+
+        # He sees an 'Active' checkbox
+        self.browser.find_element_by_id('id_active')
+
+        # He saves the comment
+        self.browser.find_element_by_css_selector('.submit-row .default').click()
+
+        # And sees a new comment in the list
+        self.assertEqual(len(self.search_model_by('')), 3)
