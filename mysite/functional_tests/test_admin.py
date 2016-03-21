@@ -41,7 +41,7 @@ class TestModelAdmin(StaticLiveServerTestCase):
 
     def search_model_by(self, text):
         search_field = self.browser.find_element_by_id('searchbar')
-        search_button = self.browser.find_element_by_css_selector('#changelist-search input[type="submit"')
+        search_button = self.browser.find_element_by_css_selector('#changelist-search input[type="submit"]')
 
         search_field.clear()
         search_field.send_keys(text)
