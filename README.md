@@ -50,7 +50,7 @@ environment variables:
 
 ### Tests
 
-Aka unit tests:
+All integration tests:
 ```bash
 python3 mysite/manage.py test blog.tests
 ```

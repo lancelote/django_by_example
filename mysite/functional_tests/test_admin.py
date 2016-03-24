@@ -54,8 +54,8 @@ class TestPostAdmin(TestModelAdmin):
 
     def test_displayed_list(self):
         # We have two posts
-        self.post1 = PostFactory(author=self.admin_user)
-        self.post2 = PostFactory(author=self.admin_user)
+        post1 = PostFactory(author=self.admin_user)
+        post2 = PostFactory(author=self.admin_user)
 
         # Admin opens admin panel
         self.browser.get(self.live_server_url + '/admin/')
@@ -87,8 +87,8 @@ class TestPostAdmin(TestModelAdmin):
 
         # He can search by post title and body
         self.assertEqual(len(self.search_model_by('')), 2)
-        self.assertEqual(len(self.search_model_by(self.post1.title)), 1)
-        self.assertEqual(len(self.search_model_by(self.post2.title)), 1)
+        self.assertEqual(len(self.search_model_by(post1.title)), 1)
+        self.assertEqual(len(self.search_model_by(post2.title)), 1)
         self.assertEqual(len(self.search_model_by('Unknown Post')), 0)
 
         # He can see the date hierarchy links by publish date
@@ -140,8 +140,8 @@ class TestCommentAdmin(TestModelAdmin):
 
     def test_displayed_comment(self):
         # We have two comments
-        self.comment1 = CommentFactory()
-        self.comment2 = CommentFactory()
+        comment1 = CommentFactory()
+        comment2 = CommentFactory()
 
         # Admin opens admin panel
         self.browser.get(self.live_server_url + '/admin/')
@@ -173,8 +173,8 @@ class TestCommentAdmin(TestModelAdmin):
         self.assertEqual(len(self.search_model_by('')), 2)  # Total comments
 
         for field in ('name', 'email', 'body'):
-            self.assertEqual(len(self.search_model_by(getattr(self.comment1, field))), 1)
-            self.assertEqual(len(self.search_model_by(getattr(self.comment2, field))), 1)
+            self.assertEqual(len(self.search_model_by(getattr(comment1, field))), 1)
+            self.assertEqual(len(self.search_model_by(getattr(comment2, field))), 1)
             self.assertEqual(len(self.search_model_by('Unknown Post')), 0)
 
         # He starts a new comment
@@ -182,7 +182,7 @@ class TestCommentAdmin(TestModelAdmin):
 
         # He choose the post
         select = Select(self.browser.find_element_by_id('id_post'))
-        select.select_by_visible_text(self.comment1.post.title)
+        select.select_by_visible_text(comment1.post.title)
 
         # He types in a name
         self.browser.find_element_by_id('id_name').send_keys('comment_author')

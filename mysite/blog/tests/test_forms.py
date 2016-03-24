@@ -4,7 +4,7 @@
 
 from django.test import TestCase
 
-from blog.forms import EmailPostForm
+from blog.forms import EmailPostForm, CommentForm
 
 
 class EmailPostFormTest(TestCase):
@@ -23,5 +23,16 @@ class EmailPostFormTest(TestCase):
             'name': 'user',
             'sender': 'example@test.com',
             'recipient': 'another@test.com'
+        })
+        self.assertTrue(form.is_valid())
+
+
+class CommentFormTest(TestCase):
+
+    def test_form_validation_maximum_data(self):
+        form = CommentForm(data={
+            'name': 'user',
+            'email': 'example@test.com',
+            'body': 'Sample comment body',
         })
         self.assertTrue(form.is_valid())

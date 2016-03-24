@@ -17,8 +17,13 @@ h1 {
     padding-bottom: 10px;
 }
 
-.date {
+.date,
+.info {
     color: grey;
+}
+
+.comment:nth-child(even) {
+    background-color: whitesmoke;
 }
 
 #container,

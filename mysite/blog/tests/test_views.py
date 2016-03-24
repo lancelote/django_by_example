@@ -8,6 +8,7 @@ from django.core import mail
 from django.test import TestCase
 
 from blog.factories import PostFactory
+from blog.models import Comment
 
 
 class PostListTest(TestCase):
@@ -63,6 +64,26 @@ class PostDetailTest(TestCase):
     def test_unknown_post_returns_404(self):
         response = self.client.get('/blog/2000/01/02/hello-world/')
         self.assertEqual(response.status_code, 404)
+
+    def test_no_comments(self):
+        self.assertEqual(self.response.context['post'], self.post)
+        self.assertEqual(list(self.response.context['comments']), [])
+        self.assertEqual(self.response.context['new_comment'], None)
+
+    def test_incorrect_post(self):
+        bad_response = self.client.post(self.post.get_absolute_url(), {})
+        self.assertContains(bad_response, 'This field is required')
+        self.assertEqual(self.response.context['new_comment'], None)
+
+    def test_correct_post(self):
+        good_response = self.client.post(self.post.get_absolute_url(), {
+            'name': 'user',
+            'email': 'user@example.com',
+            'body': 'Sample comment body'
+        })
+        self.assertContains(good_response, 'Sample comment body')
+        self.assertContains(good_response, 'Your comment has been added.')
+        self.assertEqual(good_response.context['new_comment'], Comment.objects.get(post=self.post))
 
 
 class PostShareTest(TestCase):
