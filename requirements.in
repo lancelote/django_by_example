@@ -1,4 +1,5 @@
 Django
+django-taggit
 pytz
 pytest
 factory_boy
