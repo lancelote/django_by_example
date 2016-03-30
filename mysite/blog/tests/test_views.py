@@ -2,10 +2,10 @@
 
 """Blog views tests"""
 
-import unittest
-
 from django.core import mail
 from django.test import TestCase
+
+from taggit.models import Tag
 
 from blog.factories import PostFactory
 from blog.models import Comment
@@ -40,13 +40,28 @@ class PostListTest(TestCase):
         for post in posts[1:]:
             self.assertNotContains(response, post.title)
 
-    @unittest.skip('Not for class based view')
     def test_returns_last_page_if_page_is_out_of_range(self):
         posts = [PostFactory(status='published') for _ in range(4)]
         response = self.client.get('/blog/?page=999')
         self.assertContains(response, posts[0].title)
         for post in posts[1:]:
             self.assertNotContains(response, post.title)
+
+    def test_bad_tag_raises_404_error(self):
+        response = self.client.get('/blog/tag/test/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_if_tag_is_provided_filter_post_by_it(self):
+        posts = [PostFactory(status='published') for _ in range(4)]
+        posts[0].tags.add('test')
+        posts[2].tags.add('test')
+        response = self.client.get('/blog/tag/test/')
+        self.assertContains(response, 'Posts tagged with "test"')
+        self.assertContains(response, posts[0].title)
+        self.assertNotContains(response, posts[1].title)
+        self.assertContains(response, posts[2].title)
+        self.assertNotContains(response, posts[3].title)
+        self.assertEqual(response.context['tag'], Tag.objects.get(name='test'))
 
 
 class PostDetailTest(TestCase):

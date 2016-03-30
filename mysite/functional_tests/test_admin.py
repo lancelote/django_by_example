@@ -122,7 +122,7 @@ class TestPostAdmin(TestModelAdmin):
         # He types in the post body
         self.browser.find_element_by_id('id_body').send_keys('Sample post body')
 
-        # He publish section
+        # He sees publish section
         self.browser.find_element_by_id('id_publish_0')
 
         # He switch post status to Published
