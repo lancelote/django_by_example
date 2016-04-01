@@ -100,6 +100,23 @@ class PostDetailTest(TestCase):
         self.assertContains(good_response, 'Your comment has been added.')
         self.assertEqual(good_response.context['new_comment'], Comment.objects.get(post=self.post))
 
+    def test_similar_posts(self):
+        post1 = PostFactory(status='published')
+        post2 = PostFactory(status='published')
+        post3 = PostFactory(status='published')
+        post4 = PostFactory(status='published')
+
+        post4.tags.add('tag0', 'tag1', 'tag2')
+        post3.tags.add('tag0', 'tag1')
+        post2.tags.add('tag0')
+
+        response = self.client.get(post4.get_absolute_url())
+
+        self.assertContains(response, post3.title)
+        self.assertContains(response, post2.title)
+        self.assertNotContains(response, post1.title)
+        self.assertEqual(list(response.context['similar_posts']), [post3, post2])
+
 
 class PostShareTest(TestCase):
 
