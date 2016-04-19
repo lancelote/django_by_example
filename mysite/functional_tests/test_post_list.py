@@ -8,7 +8,7 @@ from selenium import webdriver
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
-from blog.factories import PostFactory
+from blog.factories import PostFactory, CommentFactory
 
 
 class TestPostList(StaticLiveServerTestCase):
@@ -84,8 +84,24 @@ class TestPostList(StaticLiveServerTestCase):
         self.post6 = PostFactory(status='published')
         self.browser.get(self.live_server_url + '/blog/')
 
-        # Users see five latest posts
-        sidebar = self.browser.find_element_by_id('sidebar')
+        # User sees five latest posts
         expected_posts = [self.post6, self.post5, self.post4, self.post3, self.post1]
-        posts = [post.text for post in sidebar.find_elements_by_css_selector('li a')]
-        self.assertEqual(posts, [post.title for post in expected_posts])
+        actual_post_elements = self.browser.find_elements_by_css_selector('#latest-posts a')
+        actual_post_titles = [post.text for post in actual_post_elements]
+        self.assertEqual(actual_post_titles, [post.title for post in expected_posts])
+
+    def test_blog_tags__get_most_commented_posts(self):
+        """Custom get_most_commented_posts tag works fine"""
+        for _ in range(4):
+            CommentFactory(post=self.post4)
+        for _ in range(3):
+            CommentFactory(post=self.post1)
+        for _ in range(2):
+            CommentFactory(post=self.post3)
+        self.browser.get(self.live_server_url + '/blog/')
+
+        # User sees most commented posts list
+        expected_posts = [self.post4, self.post1, self.post3, self.post0]
+        actual_post_elements = self.browser.find_elements_by_css_selector('#most-commented-posts a')
+        actual_post_titles = [post.text for post in actual_post_elements]
+        self.assertEqual(actual_post_titles, [post.title for post in expected_posts])

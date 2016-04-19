@@ -4,8 +4,8 @@
 
 from django.test import TestCase
 
-from blog.factories import PostFactory
-from blog.templatetags.blog_tags import total_posts, show_latest_posts
+from blog.factories import PostFactory, CommentFactory
+from blog.templatetags.blog_tags import total_posts, show_latest_posts, get_most_commented_posts
 
 
 class TotalPostsTest(TestCase):
@@ -29,3 +29,21 @@ class ShowLatestPosts(TestCase):
 
     def test_returns_correct_result_with_non_default_argument(self):
         self.assertEqual(list(show_latest_posts(3)['latest_posts']), self.posts[::-1][:3])
+
+
+class GetMostCommentedPostsTest(TestCase):
+
+    def setUp(self):
+        self.posts = []
+
+        for i in range(5):
+            post = PostFactory(status='published')
+            self.posts.append(post)
+            for _ in range(i):
+                CommentFactory(post=post)
+
+    def test_returns_correct_result_with_default_argument(self):
+        self.assertEqual(list(get_most_commented_posts()), self.posts[::-1])
+
+    def test_returns_correct_result_with_non_default_argument(self):
+        self.assertEqual(list(get_most_commented_posts(3)), self.posts[::-1][:3])
