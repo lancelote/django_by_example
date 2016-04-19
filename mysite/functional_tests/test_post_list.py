@@ -13,7 +13,6 @@ from blog.factories import PostFactory
 class TestPostList(StaticLiveServerTestCase):
 
     def setUp(self):
-        self.browser = webdriver.Firefox()
         self.post0 = PostFactory(status='published')
         self.post1 = PostFactory(status='published')
         self.post2 = PostFactory()
@@ -23,6 +22,9 @@ class TestPostList(StaticLiveServerTestCase):
         self.post3.tags.add('test_tag_0')
         self.post4.tags.add('test_tag_0')
         self.post4.tags.add('test_tag_1')
+
+        self.browser = webdriver.Firefox()
+        self.browser.get(self.live_server_url + '/blog/')  # Go to the main page
 
     def tearDown(self):
         self.browser.quit()
@@ -36,9 +38,6 @@ class TestPostList(StaticLiveServerTestCase):
             self.assertNotIn(post.title, post_titles)
 
     def test_basic_post_list(self):
-        # User goes to the main page
-        self.browser.get(self.live_server_url + '/blog/')
-
         # He sees the list of published posts
         self.can_see_actual_posts()
 
@@ -56,9 +55,6 @@ class TestPostList(StaticLiveServerTestCase):
         self.assertEqual(self.browser.current_url, self.live_server_url + self.post4.get_absolute_url())
 
     def test_post_list_tags(self):
-        # User goes to the main page
-        self.browser.get(self.live_server_url + '/blog/')
-
         # He sees post4 has two tags
         posts = self.browser.find_elements_by_class_name('post')
         tags = posts[0].find_elements_by_css_selector('.tags a')
@@ -73,3 +69,10 @@ class TestPostList(StaticLiveServerTestCase):
         self.assertEqual(self.browser.find_element_by_tag_name('h2').text, 'Posts tagged with "test_tag_0"')
         titles = [title.text for title in self.browser.find_elements_by_css_selector('.post h2 a')]
         self.assertListEqual(titles, [self.post4.title, self.post3.title])
+
+    def test_blog_tags__total_posts(self):
+        """Custom tags works fine"""
+        # User sees number of published posts in the sidebar welcome message
+        sidebar = self.browser.find_element_by_id('sidebar')
+        welcome_message = sidebar.find_element_by_tag_name('p').text
+        self.assertIn('4', welcome_message)
