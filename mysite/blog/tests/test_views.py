@@ -29,23 +29,17 @@ class PostListTest(TestCase):
     def test_returns_only_3_last_posts_by_default(self):
         posts = [PostFactory(status='published') for _ in range(4)]
         response = self.client.get('/blog/')
-        self.assertNotContains(response, posts[0].title)
-        for post in posts[1:]:
-            self.assertContains(response, post.title)
+        self.assertEqual(list(response.context['posts']), posts[1:][::-1])
 
     def test_second_page_returns_correct_posts(self):
         posts = [PostFactory(status='published') for _ in range(4)]
         response = self.client.get('/blog/?page=2')
-        self.assertContains(response, posts[0].title)
-        for post in posts[1:]:
-            self.assertNotContains(response, post.title)
+        self.assertEqual(list(response.context['posts']), [posts[0]])
 
     def test_returns_last_page_if_page_is_out_of_range(self):
         posts = [PostFactory(status='published') for _ in range(4)]
         response = self.client.get('/blog/?page=999')
-        self.assertContains(response, posts[0].title)
-        for post in posts[1:]:
-            self.assertNotContains(response, post.title)
+        self.assertEqual(list(response.context['posts']), [posts[0]])
 
     def test_bad_tag_raises_404_error(self):
         response = self.client.get('/blog/tag/test/')
@@ -57,10 +51,7 @@ class PostListTest(TestCase):
         posts[2].tags.add('test')
         response = self.client.get('/blog/tag/test/')
         self.assertContains(response, 'Posts tagged with "test"')
-        self.assertContains(response, posts[0].title)
-        self.assertNotContains(response, posts[1].title)
-        self.assertContains(response, posts[2].title)
-        self.assertNotContains(response, posts[3].title)
+        self.assertEqual(list(response.context['posts']), [posts[2], posts[0]])
         self.assertEqual(response.context['tag'], Tag.objects.get(name='test'))
 
 
@@ -101,7 +92,7 @@ class PostDetailTest(TestCase):
         self.assertEqual(good_response.context['new_comment'], Comment.objects.get(post=self.post))
 
     def test_similar_posts(self):
-        post1 = PostFactory(status='published')
+        PostFactory(status='published')
         post2 = PostFactory(status='published')
         post3 = PostFactory(status='published')
         post4 = PostFactory(status='published')
@@ -112,9 +103,6 @@ class PostDetailTest(TestCase):
 
         response = self.client.get(post4.get_absolute_url())
 
-        self.assertContains(response, post3.title)
-        self.assertContains(response, post2.title)
-        self.assertNotContains(response, post1.title)
         self.assertEqual(list(response.context['similar_posts']), [post3, post2])
 
 

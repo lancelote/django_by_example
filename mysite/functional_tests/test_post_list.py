@@ -1,5 +1,6 @@
 # coding=utf-8
-# pylint: disable=missing-docstring, no-member
+# pylint: disable=missing-docstring, no-member, attribute-defined-outside-init, invalid-name
+# pylint: disable=too-many-instance-attributes
 
 """Post list page test"""
 
@@ -71,8 +72,20 @@ class TestPostList(StaticLiveServerTestCase):
         self.assertListEqual(titles, [self.post4.title, self.post3.title])
 
     def test_blog_tags__total_posts(self):
-        """Custom tags works fine"""
+        """Custom total_posts tag works fine"""
         # User sees number of published posts in the sidebar welcome message
         sidebar = self.browser.find_element_by_id('sidebar')
         welcome_message = sidebar.find_element_by_tag_name('p').text
         self.assertIn('4', welcome_message)
+
+    def test_blog_tags__show_latest_posts(self):
+        """Custom show_latest_posts tag works fine"""
+        self.post5 = PostFactory(status='published')
+        self.post6 = PostFactory(status='published')
+        self.browser.get(self.live_server_url + '/blog/')
+
+        # Users see five latest posts
+        sidebar = self.browser.find_element_by_id('sidebar')
+        expected_posts = [self.post6, self.post5, self.post4, self.post3, self.post1]
+        posts = [post.text for post in sidebar.find_elements_by_css_selector('li a')]
+        self.assertEqual(posts, [post.title for post in expected_posts])

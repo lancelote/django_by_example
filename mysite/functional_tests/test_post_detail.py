@@ -83,7 +83,6 @@ class TestPostDetail(StaticLiveServerTestCase):
 
         # There is no similar posts for post3
         self.browser.get(self.live_server_url + self.post3.get_absolute_url())
-        print(self.browser.find_element_by_class_name('similar-posts').text)
         self.assertEqual(
             self.browser.find_element_by_css_selector('.similar-posts p').text,
             'There are no similar posts yet.'
