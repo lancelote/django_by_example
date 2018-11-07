@@ -3,7 +3,8 @@
 
 # django_by_example
 
-Code for [Django by Example book](http://www.amazon.com/Django-Example-Antonio-Mele/dp/1784391913) by Antonio Mele
+- Code for [Django by Example book](http://www.amazon.com/Django-Example-Antonio-Mele/dp/1784391913) by Antonio Mele
+- Archived due to a new book edition: [Django 2 by Example](https://github.com/lancelote/django_2_by_example)
 
 ## My Progress
 
